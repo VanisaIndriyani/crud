@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role']; // Store role in session
             $_SESSION['welcome_message'] = "Welcome back, " . htmlspecialchars($user['username']) . "!";
             header('Location: dashboard.php');
             exit;

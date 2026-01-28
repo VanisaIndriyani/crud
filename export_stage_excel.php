@@ -16,7 +16,7 @@ if (!$stage_id) {
 }
 
 // Fetch Stage Info
-$stmt = $pdo->prepare("SELECT ps.*, p.name as project_name FROM project_stages ps JOIN projects p ON ps.project_id = p.id WHERE ps.id = :id");
+$stmt = $pdo->prepare("SELECT ps.*, p.name as project_name, u.username as creator_name FROM project_stages ps JOIN projects p ON ps.project_id = p.id LEFT JOIN users u ON p.created_by = u.id WHERE ps.id = :id");
 $stmt->execute(['id' => $stage_id]);
 $stage = $stmt->fetch();
 
@@ -85,16 +85,20 @@ $valueStyle = [
 // Set Title
 $sheet->setCellValue('A1', $stage['project_name']);
 $sheet->setCellValue('A2', $stage['name']);
+$sheet->setCellValue('A3', 'Created By: ' . ($stage['creator_name'] ?? 'Unknown'));
 $sheet->mergeCells('A1:B1');
 $sheet->mergeCells('A2:B2');
+$sheet->mergeCells('A3:B3');
 
 $sheet->getStyle('A1')->applyFromArray($headerStyle);
 $sheet->getStyle('A2')->applyFromArray($subHeaderStyle);
+$sheet->getStyle('A3')->applyFromArray($subHeaderStyle);
 
 $sheet->getRowDimension(1)->setRowHeight(30);
 $sheet->getRowDimension(2)->setRowHeight(25);
+$sheet->getRowDimension(3)->setRowHeight(25);
 
-$row = 4;
+$row = 5;
 $data = null;
 $fields = [];
 

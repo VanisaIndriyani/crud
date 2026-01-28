@@ -16,7 +16,7 @@ if (!$project_id) {
 
 try {
     // Fetch Project
-    $stmt = $pdo->prepare("SELECT * FROM projects WHERE id = :id");
+    $stmt = $pdo->prepare("SELECT p.*, u.username as creator_name FROM projects p LEFT JOIN users u ON p.created_by = u.id WHERE p.id = :id");
     $stmt->execute(['id' => $project_id]);
     $project = $stmt->fetch();
 
@@ -61,6 +61,7 @@ $row++;
 $details = [
     'Project Name' => $project['name'],
     'Status' => $project['status'],
+    'Created By' => $project['creator_name'] ?? 'Unknown',
     'Software Name' => $project['software'],
     'Version' => $project['version'],
     'Description' => $project['description'],
