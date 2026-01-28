@@ -107,9 +107,6 @@ try {
             <?php if (isset($error)): ?>
                 <p style="color: #ffcccb; margin-top: 10px; font-weight: bold;"><?php echo $error; ?></p>
             <?php endif; ?>
-            <?php if (isset($_GET['msg']) && $_GET['msg'] === 'deleted'): ?>
-                <p style="color: #c6ff00; margin-top: 10px; font-weight: bold;">Project deleted successfully.</p>
-            <?php endif; ?>
         </div>
         <button onclick="openModal('newProjectModal')" class="btn btn-primary">
             <i class="fas fa-plus"></i> New Project
@@ -238,7 +235,7 @@ try {
                 <textarea name="description" rows="3" placeholder="Brief description of the validation scope..."></textarea>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                <button type="button" class="btn btn-accent" style="flex: 1;" onclick="closeModal('newProjectModal')">Cancel</button>
+                <button type="button" class="btn btn-accent" style="flex: 1; color: var(--danger-color); font-weight: 700;" onclick="closeModal('newProjectModal')">Cancel</button>
                 <button type="submit" class="btn btn-primary" style="flex: 1;">Create Project</button>
             </div>
         </form>
@@ -271,6 +268,45 @@ try {
         document.getElementById('confirmDeleteBtn').href = 'delete_project.php?id=' + projectId;
         openModal('deleteModal');
     }
+
+    // Check for URL parameters to show toast
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('msg') === 'deleted') {
+            showToast('Project deleted successfully', 'success');
+            
+            // Clean URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    });
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+
+        toastMessage.textContent = message;
+        toast.className = 'toast-notification ' + type;
+        
+        if (type === 'success') {
+            toastIcon.className = 'fas fa-check-circle';
+        } else {
+            toastIcon.className = 'fas fa-info-circle';
+        }
+
+        toast.classList.add('show');
+
+        setTimeout(function() {
+            toast.classList.remove('show');
+        }, 3000);
+    }
 </script>
+
+<!-- Toast Notification Container -->
+<div id="toastNotification" class="toast-notification">
+    <i id="toastIcon" class="fas fa-check-circle"></i>
+    <span id="toastMessage">Notification message</span>
+</div>
 
 <?php include 'includes/footer.php'; ?>
