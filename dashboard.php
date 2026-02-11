@@ -193,6 +193,9 @@ try {
                 <i class="fas fa-users-cog"></i> User Management
             </button>
             <?php endif; ?>
+            <button onclick="window.location.href='validation_reports.php'" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; color: var(--primary-color); border: 1px solid var(--primary-color);">
+                <i class="fas fa-file-signature"></i> Reports
+            </button>
             <button onclick="openModal('newProjectModal')" class="btn btn-primary">
                 <i class="fas fa-plus"></i> New Project
             </button>
@@ -259,7 +262,7 @@ try {
                             
                             <!-- Risk Assessment Info -->
                             <?php if (!empty($project['risk_level'])): ?>
-                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 5px; align-items: flex-start;">
                                     <?php 
                                         $riskClass = match($project['risk_level']) {
                                             'High' => 'danger',
@@ -302,10 +305,11 @@ try {
                             <i class="fas fa-trash"></i>
                         </a>
                     </div>
+
                     <?php if (!empty($project['risk_level']) && $project['risk_level'] == 'High'): ?>
-                         <div style="margin-top: 5px; text-align: center;">
-                             <span style="font-size: 0.75rem; color: #e53935; font-weight: bold; border: 1px solid #e53935; padding: 2px 5px; border-radius: 4px;">Revalidasi Active (1 Thn)</span>
-                         </div>
+                        <div style="margin-top: 10px; text-align: center;">
+                            <span style="font-size: 0.75rem; color: #e53935; font-weight: bold; border: 1px solid #e53935; padding: 2px 5px; border-radius: 4px;">Revalidasi Active (1 Thn)</span>
+                        </div>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
