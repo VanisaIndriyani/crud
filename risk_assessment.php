@@ -179,6 +179,7 @@ if (isset($_GET['msg'])) {
         padding: 2rem;
         box-shadow: var(--shadow-sm);
         margin-bottom: 2rem;
+        color: var(--text-color);
     }
 
     .form-section-title {
@@ -381,23 +382,23 @@ if (isset($_GET['msg'])) {
                             </div>
                         </div>
 
-                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                            <label style="font-weight: 600; margin-bottom: 1rem; display: block;">Risk Scoring (1-10)</label>
+                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; color: var(--text-color);">
+                            <label style="font-weight: 700; margin-bottom: 1rem; display: block; color: var(--primary-dark);">Risk Scoring (1-10)</label>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                                 <div>
-                                    <label style="font-size: 0.85rem;">Severity (S)</label>
+                                    <label style="font-size: 0.85rem; color: var(--text-light); font-weight: 600;">Severity (S)</label>
                                     <select name="severity" id="severity" onchange="calculateRPN()" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd;">
                                         <?php for($i=1; $i<=10; $i++) echo "<option value='$i'>$i</option>"; ?>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="font-size: 0.85rem;">Occurrence (O)</label>
+                                    <label style="font-size: 0.85rem; color: var(--text-light); font-weight: 600;">Occurrence (O)</label>
                                     <select name="occurrence" id="occurrence" onchange="calculateRPN()" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd;">
                                         <?php for($i=1; $i<=10; $i++) echo "<option value='$i'>$i</option>"; ?>
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="font-size: 0.85rem;">Detection (D)</label>
+                                    <label style="font-size: 0.85rem; color: var(--text-light); font-weight: 600;">Detection (D)</label>
                                     <select name="detection" id="detection" onchange="calculateRPN()" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd;">
                                         <?php for($i=1; $i<=10; $i++) echo "<option value='$i'>$i</option>"; ?>
                                     </select>
