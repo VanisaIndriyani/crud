@@ -242,19 +242,57 @@ try {
                                 <p style="font-size: 0.85rem; margin-top: 0.5rem; line-height: 1.4;"><?php echo htmlspecialchars(substr($project['description'], 0, 80)) . (strlen($project['description']) > 80 ? '...' : ''); ?></p>
                             <?php endif; ?>
                             <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-light);"><i class="far fa-calendar-alt"></i> Created <?php echo date('M d, Y', strtotime($project['created_at'])); ?></p>
+                            
+                            <!-- Risk Assessment Info -->
+                            <?php if (!empty($project['risk_level'])): ?>
+                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <?php 
+                                        $riskClass = match($project['risk_level']) {
+                                            'High' => 'danger',
+                                            'Medium' => 'warning',
+                                            'Low' => 'success',
+                                            default => 'secondary'
+                                        };
+                                        $riskColor = match($project['risk_level']) {
+                                            'High' => '#e53935',
+                                            'Medium' => '#fb8c00',
+                                            'Low' => '#43a047',
+                                            default => '#757575'
+                                        };
+                                    ?>
+                                    <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; border: 1px solid <?php echo $riskColor; ?>; color: <?php echo $riskColor; ?>; font-weight: bold;">
+                                        Risk: <?php echo $project['risk_level']; ?>
+                                    </span>
+                                    <?php if (!empty($project['next_revalidation_date'])): ?>
+                                        <span style="font-size: 0.7rem; color: var(--text-light);">
+                                            Reval: <?php echo date('M Y', strtotime($project['next_revalidation_date'])); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
                         </div>
                     </div>
-                    <div style="display: flex; gap: 10px; margin-top: auto;">
-                        <a href="project_details.php?id=<?php echo $project['id']; ?>" class="btn btn-secondary" style="flex: 1; justify-content: center;">
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto;">
+                        <a href="risk_assessment.php?project_id=<?php echo $project['id']; ?>" class="btn btn-secondary" style="flex: 1 1 100%; justify-content: center; border-color: #9ccc65; color: #558b2f; background-color: #f1f8e9;" title="Risk Assessment">
+                           Risk Assessment
+                        </a>
+                        <a href="project_details.php?id=<?php echo $project['id']; ?>" class="btn btn-primary" style="flex: 2; justify-content: center; background-color: #c0ca33; border-color: #c0ca33; color: #333;">
                             Open Project
                         </a>
-                        <a href="project_report.php?id=<?php echo $project['id']; ?>" class="btn btn-secondary" style="padding: 0 1.2rem;" title="View Report">
+                        <a href="project_report.php?id=<?php echo $project['id']; ?>" class="btn btn-secondary" style="flex: 0 0 auto; padding: 0 1rem; background-color: #c0ca33; border-color: #c0ca33; color: #333;" title="View Report">
                             <i class="far fa-file-alt"></i>
                         </a>
-                        <a href="#" class="btn btn-danger" style="padding: 0 1.2rem;" title="Delete Project" onclick="confirmDelete(<?php echo $project['id']; ?>); return false;">
+                        <a href="#" class="btn btn-danger" style="flex: 0 0 auto; padding: 0 1rem; background-color: #ef9a9a; border-color: #ef9a9a; color: #c62828;" title="Delete Project" onclick="confirmDelete(<?php echo $project['id']; ?>); return false;">
                             <i class="fas fa-trash"></i>
                         </a>
                     </div>
+                    <?php if (!empty($project['risk_level']) && $project['risk_level'] == 'High'): ?>
+                         <div style="margin-top: 5px; text-align: center;">
+                             <span style="font-size: 0.75rem; color: #e53935; font-weight: bold; border: 1px solid #e53935; padding: 2px 5px; border-radius: 4px;">Revalidasi Active (1 Thn)</span>
+                         </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>

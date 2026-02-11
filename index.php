@@ -339,6 +339,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 padding: 2.5rem 2rem;
             }
         }
+
+        .version-text {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 1000;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body class="login-body">
@@ -355,6 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <!-- Right Side: Login Form -->
         <div class="login-right">
             <div class="login-title">WELCOME</div>
+            <div class="login-subtitle">CSV Management System</div>
             
             <?php if (isset($error)): ?>
                 <p style="color: #ffcdd2; margin-bottom: 15px; font-size: 0.9rem; background: rgba(255,0,0,0.1); padding: 5px 10px; border-radius: 5px;"><?php echo $error; ?></p>
@@ -391,5 +405,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             this.classList.toggle('fa-eye-slash');
         });
     </script>
+    <div class="version-text">©️ version : 1.0.0</div>
 </body>
 </html>

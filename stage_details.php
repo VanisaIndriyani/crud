@@ -294,12 +294,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
         $stmt->execute(['status' => $newStatus, 'id' => $stage_id]);
         $stage['status'] = $newStatus;
         if (empty($message)) $message = "Draft saved successfully.";
+
+        // Update Parent Project Status
+        updateProjectStatus($pdo, $stage['project_id']);
     } elseif ($action === 'mark_completed') {
         $stmt = $pdo->prepare("UPDATE project_stages SET status = 'Completed', completion_date = CURRENT_DATE() WHERE id = :id");
         $stmt->execute(['id' => $stage_id]);
         $stage['status'] = 'Completed';
         $message = "Stage marked as completed.";
+
+        // Update Parent Project Status
+        updateProjectStatus($pdo, $stage['project_id']);
     }
+}
+
+// Helper function to update project status based on stages
+function updateProjectStatus($pdo, $projectId) {
+    $stmt = $pdo->prepare("SELECT status FROM project_stages WHERE project_id = :id");
+    $stmt->execute(['id' => $projectId]);
+    $stages = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $total = count($stages);
+    $completed = 0;
+    $started = 0;
+
+    foreach ($stages as $status) {
+        if ($status === 'Completed') {
+            $completed++;
+            $started++;
+        } elseif ($status === 'In Progress') {
+            $started++;
+        }
+    }
+
+    $newStatus = 'Draft';
+    if ($total > 0 && $completed === $total) {
+        $newStatus = 'Completed';
+    } elseif ($started > 0) {
+        $newStatus = 'In Progress';
+    }
+
+    $stmtUpdate = $pdo->prepare("UPDATE projects SET status = :status WHERE id = :id");
+    $stmtUpdate->execute(['status' => $newStatus, 'id' => $projectId]);
 }
 ?>
 
