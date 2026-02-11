@@ -142,6 +142,7 @@ $limit = 6;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max($page, 1);
 $offset = ($page - 1) * $limit;
+$filterStatus = $_GET['status'] ?? '';
 
 $projects = [];
 $totalProjects = 0;
@@ -149,12 +150,22 @@ $totalPages = 0;
 
 try {
     // Get total count
-    $stmtCount = $pdo->query("SELECT COUNT(*) FROM projects");
+    if ($filterStatus) {
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM projects WHERE status = :status");
+        $stmtCount->execute(['status' => $filterStatus]);
+    } else {
+        $stmtCount = $pdo->query("SELECT COUNT(*) FROM projects");
+    }
     $totalProjects = $stmtCount->fetchColumn();
     $totalPages = ceil($totalProjects / $limit);
 
     // Get paginated projects
-    $stmt = $pdo->prepare("SELECT * FROM projects ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+    if ($filterStatus) {
+        $stmt = $pdo->prepare("SELECT * FROM projects WHERE status = :status ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':status', $filterStatus);
+    } else {
+        $stmt = $pdo->prepare("SELECT * FROM projects ORDER BY created_at DESC LIMIT :limit OFFSET :offset");
+    }
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
@@ -187,28 +198,28 @@ try {
 
     <!-- Stats Cards -->
     <div class="stats-grid">
-        <div class="stat-card fade-in-up">
+        <div class="stat-card fade-in-up" onclick="window.location.href='?status=Draft'" style="cursor: pointer; transition: all 0.3s; <?php echo $filterStatus === 'Draft' ? 'border: 2px solid var(--text-light); transform: translateY(-5px); box-shadow: var(--shadow-md);' : ''; ?>">
             <div>
                 <h3>Registered</h3>
                 <div class="value"><?php echo $stats['Draft']; ?></div>
             </div>
             <div class="icon"><i class="fas fa-file-alt"></i></div>
         </div>
-        <div class="stat-card fade-in-up">
+        <div class="stat-card fade-in-up" onclick="window.location.href='?status=In Progress'" style="cursor: pointer; transition: all 0.3s; <?php echo $filterStatus === 'In Progress' ? 'border: 2px solid var(--warning-color); transform: translateY(-5px); box-shadow: var(--shadow-md);' : ''; ?>">
             <div>
                 <h3>In Progress</h3>
                 <div class="value"><?php echo $stats['In Progress']; ?></div>
             </div>
             <div class="icon"><i class="fas fa-spinner fa-spin"></i></div>
         </div>
-        <div class="stat-card fade-in-up">
+        <div class="stat-card fade-in-up" onclick="window.location.href='?status=Completed'" style="cursor: pointer; transition: all 0.3s; <?php echo $filterStatus === 'Completed' ? 'border: 2px solid var(--success-color); transform: translateY(-5px); box-shadow: var(--shadow-md);' : ''; ?>">
             <div>
                 <h3>Completed</h3>
                 <div class="value"><?php echo $stats['Completed']; ?></div>
             </div>
             <div class="icon"><i class="fas fa-check-circle"></i></div>
         </div>
-        <div class="stat-card fade-in-up">
+        <div class="stat-card fade-in-up" onclick="window.location.href='dashboard.php'" style="cursor: pointer; transition: all 0.3s; <?php echo empty($filterStatus) ? 'border: 2px solid var(--accent-color); transform: translateY(-5px); box-shadow: var(--shadow-md);' : ''; ?>">
             <div>
                 <h3>Total Projects</h3>
                 <div class="value"><?php echo $stats['Total']; ?></div>
@@ -301,18 +312,21 @@ try {
     <!-- Pagination -->
     <?php if ($totalPages > 1): ?>
     <div class="pagination">
+        <?php 
+        $filterParam = $filterStatus ? '&status=' . urlencode($filterStatus) : '';
+        ?>
         <?php if ($page > 1): ?>
-            <a href="?page=<?php echo $page - 1; ?>" class="page-link"><i class="fas fa-chevron-left"></i></a>
+            <a href="?page=<?php echo $page - 1; ?><?php echo $filterParam; ?>" class="page-link"><i class="fas fa-chevron-left"></i></a>
         <?php endif; ?>
 
         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-            <a href="?page=<?php echo $i; ?>" class="page-link <?php echo $i === $page ? 'active' : ''; ?>">
+            <a href="?page=<?php echo $i; ?><?php echo $filterParam; ?>" class="page-link <?php echo $i === $page ? 'active' : ''; ?>">
                 <?php echo $i; ?>
             </a>
         <?php endfor; ?>
 
         <?php if ($page < $totalPages): ?>
-            <a href="?page=<?php echo $page + 1; ?>" class="page-link"><i class="fas fa-chevron-right"></i></a>
+            <a href="?page=<?php echo $page + 1; ?><?php echo $filterParam; ?>" class="page-link"><i class="fas fa-chevron-right"></i></a>
         <?php endif; ?>
     </div>
     <?php endif; ?>

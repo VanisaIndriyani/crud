@@ -29,6 +29,10 @@ if ($stage_id) {
         $stmtDocs->execute(['id' => $stage_id]);
         $documents = $stmtDocs->fetchAll();
 
+        // Fetch Users for Approval
+        $stmtUsers = $pdo->query("SELECT id, username FROM users ORDER BY username ASC");
+        $all_users = $stmtUsers->fetchAll();
+
         // Fetch URS Details if stage is "User Request Specification"
         if ($stage['name'] === 'User Request Specification') {
             $stmtURS = $pdo->prepare("SELECT * FROM stage_urs_details WHERE stage_id = :id");
@@ -209,7 +213,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
         $overall_result = $_POST['overall_result'] ?? '';
         $deviation = $_POST['deviation'] ?? '';
         $recommendation = $_POST['recommendation'] ?? '';
-        $approval = $_POST['approval'] ?? '';
+        
+        $prepared_by = !empty($_POST['prepared_by']) ? $_POST['prepared_by'] : null;
+        $reviewed_by = !empty($_POST['reviewed_by']) ? $_POST['reviewed_by'] : null;
+        $approved_by = !empty($_POST['approved_by']) ? $_POST['approved_by'] : null;
+        
+        // Logic for dates: Update date only if ID is provided. 
+        // In a real system, we'd check if it changed, but for now update timestamp is fine.
+        $prepared_date = $prepared_by ? date('Y-m-d H:i:s') : null;
+        $reviewed_date = $reviewed_by ? date('Y-m-d H:i:s') : null;
+        $approved_date = $approved_by ? date('Y-m-d H:i:s') : null;
 
         if ($validation_report_details) {
             $stmt = $pdo->prepare("UPDATE stage_validation_report_details SET 
@@ -217,12 +230,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
                 overall_result = :result, 
                 deviation = :deviation, 
                 recommendation = :recommendation, 
-                approval = :approval 
+                prepared_by = :prep,
+                prepared_date = IF(:prep IS NOT NULL, COALESCE(prepared_date, NOW()), NULL),
+                reviewed_by = :rev,
+                reviewed_date = IF(:rev IS NOT NULL, COALESCE(reviewed_date, NOW()), NULL),
+                approved_by = :appr,
+                approved_date = IF(:appr IS NOT NULL, COALESCE(approved_date, NOW()), NULL)
                 WHERE stage_id = :id");
         } else {
             $stmt = $pdo->prepare("INSERT INTO stage_validation_report_details 
-                (stage_id, executive_summary, overall_result, deviation, recommendation, approval) 
-                VALUES (:id, :summary, :result, :deviation, :recommendation, :approval)");
+                (stage_id, executive_summary, overall_result, deviation, recommendation, prepared_by, prepared_date, reviewed_by, reviewed_date, approved_by, approved_date) 
+                VALUES (:id, :summary, :result, :deviation, :recommendation, :prep, NOW(), :rev, NOW(), :appr, NOW())");
         }
         
         $stmt->execute([
@@ -231,7 +249,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
             'result' => $overall_result,
             'deviation' => $deviation,
             'recommendation' => $recommendation,
-            'approval' => $approval
+            'prep' => $prepared_by,
+            'rev' => $reviewed_by,
+            'appr' => $approved_by
         ]);
 
         // Refresh Validation Report details
@@ -360,9 +380,28 @@ function updateProjectStatus($pdo, $projectId) {
                         <?php echo $stage['status']; ?>
                     </div>
                 </div>
+                
+                <?php 
+                $is_approved = false;
+                if ($stage['name'] === 'Laporan Validasi' && $validation_report_details) {
+                    $is_approved = !empty($validation_report_details['prepared_by']) && 
+                                   !empty($validation_report_details['reviewed_by']) && 
+                                   !empty($validation_report_details['approved_by']);
+                } else {
+                    // For other stages, default to true or implement their own logic
+                    $is_approved = true; 
+                }
+                ?>
+                
+                <?php if ($is_approved): ?>
                 <a href="export_stage_excel.php?id=<?php echo $stage['id']; ?>" class="btn" style="background-color: var(--success-color); color: white; box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);">
                     <i class="fas fa-file-excel"></i> Export Excel
                 </a>
+                <?php else: ?>
+                <button type="button" class="btn" disabled style="background-color: #ccc; cursor: not-allowed; opacity: 0.7;" title="Complete all approvals to enable export">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </button>
+                <?php endif; ?>
             </div>
 
             <?php if (!empty($message)): ?>
@@ -525,8 +564,81 @@ function updateProjectStatus($pdo, $projectId) {
                     </div>
 
                     <div class="form-group">
-                        <label>Persetujuan <span style="color: var(--danger-color)">*</span></label>
-                        <textarea name="approval" rows="4" required class="form-control"><?php echo htmlspecialchars($validation_report_details['approval'] ?? ''); ?></textarea>
+                        <label>Approval Status <span style="color: var(--danger-color)">*</span></label>
+                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            
+                            <!-- Display Current Status -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                                <div>
+                                    <small style="color: var(--text-light); font-weight: 600;">Prepared By</small>
+                                    <div style="font-weight: 500;">
+                                        <?php 
+                                        $prep_user = array_filter($all_users, fn($u) => $u['id'] == ($validation_report_details['prepared_by'] ?? 0));
+                                        echo !empty($prep_user) ? htmlspecialchars(reset($prep_user)['username']) : '-';
+                                        ?>
+                                    </div>
+                                </div>
+                                <div>
+                                    <small style="color: var(--text-light); font-weight: 600;">Acknowledged By</small>
+                                    <div style="font-weight: 500;">
+                                        <?php 
+                                        $rev_user = array_filter($all_users, fn($u) => $u['id'] == ($validation_report_details['reviewed_by'] ?? 0));
+                                        echo !empty($rev_user) ? htmlspecialchars(reset($rev_user)['username']) : '-';
+                                        ?>
+                                    </div>
+                                </div>
+                                <div>
+                                    <small style="color: var(--text-light); font-weight: 600;">Approved By</small>
+                                    <div style="font-weight: 500;">
+                                        <?php 
+                                        $appr_user = array_filter($all_users, fn($u) => $u['id'] == ($validation_report_details['approved_by'] ?? 0));
+                                        echo !empty($appr_user) ? htmlspecialchars(reset($appr_user)['username']) : '-';
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('approval-form-section').style.display = document.getElementById('approval-form-section').style.display === 'none' ? 'block' : 'none'">
+                                <i class="fas fa-edit"></i> Manage Approvals
+                            </button>
+
+                            <!-- Hidden Form -->
+                            <div id="approval-form-section" style="display: none; margin-top: 1.5rem; border-top: 1px solid #ddd; padding-top: 1rem;">
+                                <div class="form-group">
+                                    <label>Prepared By (Dibuat Oleh)</label>
+                                    <select name="prepared_by" class="form-control">
+                                        <option value="">Select User</option>
+                                        <?php foreach ($all_users as $user): ?>
+                                            <option value="<?php echo $user['id']; ?>" <?php echo ($validation_report_details['prepared_by'] ?? '') == $user['id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($user['username']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Acknowledged By (Mengetahui)</label>
+                                    <select name="reviewed_by" class="form-control">
+                                        <option value="">Select User</option>
+                                        <?php foreach ($all_users as $user): ?>
+                                            <option value="<?php echo $user['id']; ?>" <?php echo ($validation_report_details['reviewed_by'] ?? '') == $user['id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($user['username']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Approved By (Menyetujui)</label>
+                                    <select name="approved_by" class="form-control">
+                                        <option value="">Select User</option>
+                                        <?php foreach ($all_users as $user): ?>
+                                            <option value="<?php echo $user['id']; ?>" <?php echo ($validation_report_details['approved_by'] ?? '') == $user['id'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($user['username']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 <?php else: ?>
@@ -561,7 +673,7 @@ function updateProjectStatus($pdo, $projectId) {
                                         <div class="document-name"><?php echo htmlspecialchars($doc['file_name']); ?></div>
                                         <div class="document-meta"><?php echo date('M d, Y H:i', strtotime($doc['uploaded_at'])); ?></div>
                                     </div>
-                                    <a href="<?php echo htmlspecialchars($doc['file_path']); ?>" target="_blank" class="btn btn-sm btn-accent" style="border: none; color: var(--primary-color);">
+                                    <a href="download.php?id=<?php echo $doc['id']; ?>" class="btn btn-sm btn-accent" style="border: none; color: var(--primary-color);">
                                         <i class="fas fa-download"></i>
                                     </a>
                                 </div>
