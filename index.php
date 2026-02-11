@@ -17,6 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role']; // Store role in session
             $_SESSION['welcome_message'] = "Welcome back, " . htmlspecialchars($user['username']) . "!";
+            
+            // Log login
+            try {
+                $stmtLog = $pdo->prepare("INSERT INTO user_logs (user_id, action, ip_address, user_agent) VALUES (:uid, 'Login', :ip, :ua)");
+                $stmtLog->execute([
+                    'uid' => $user['id'],
+                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'Unknown',
+                    'ua' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+                ]);
+            } catch (Exception $e) {
+                // Ignore logging errors to allow login
+            }
+
             header('Location: dashboard.php');
             exit;
         } else {

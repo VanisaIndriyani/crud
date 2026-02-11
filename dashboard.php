@@ -186,6 +186,9 @@ try {
         </div>
         <div style="display: flex; gap: 10px;">
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+            <button onclick="window.location.href='user_logs.php'" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; color: var(--primary-color);">
+                <i class="fas fa-history"></i> Logs
+            </button>
             <button onclick="openModal('userManagementModal')" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px; color: var(--primary-color);">
                 <i class="fas fa-users-cog"></i> User Management
             </button>
