@@ -155,16 +155,35 @@ if ($stage['name'] === 'User Request Specification') {
         'PQ Conclusion' => 'pq_conclusion'
     ];
 } elseif ($stage['name'] === 'Laporan Validasi') {
-    $stmt = $pdo->prepare("SELECT * FROM stage_validation_report_details WHERE stage_id = :id");
+    $stmt = $pdo->prepare("
+        SELECT d.*, 
+               u1.username as prep_name, 
+               u2.username as rev_name, 
+               u3.username as app_name 
+        FROM stage_validation_report_details d
+        LEFT JOIN users u1 ON d.prepared_by = u1.id
+        LEFT JOIN users u2 ON d.reviewed_by = u2.id
+        LEFT JOIN users u3 ON d.approved_by = u3.id
+        WHERE d.stage_id = :id
+    ");
     $stmt->execute(['id' => $stage_id]);
     $data = $stmt->fetch();
+
+    // Format approval strings
+    if ($data) {
+        $data['prepared_info'] = ($data['prep_name'] ?? '-') . ($data['prepared_date'] ? ' (' . $data['prepared_date'] . ')' : '');
+        $data['reviewed_info'] = ($data['rev_name'] ?? '-') . ($data['reviewed_date'] ? ' (' . $data['reviewed_date'] . ')' : '');
+        $data['approved_info'] = ($data['app_name'] ?? '-') . ($data['approved_date'] ? ' (' . $data['approved_date'] . ')' : '');
+    }
 
     $fields = [
         'Executive Summary' => 'executive_summary',
         'Overall Result' => 'overall_result',
         'Deviation' => 'deviation',
         'Recommendation' => 'recommendation',
-        'Approval' => 'approval'
+        'Prepared By' => 'prepared_info',
+        'Acknowledged By' => 'reviewed_info',
+        'Approved By' => 'approved_info'
     ];
 } else {
     $sheet->setCellValue('A' . $row, "Generic Stage Data");
