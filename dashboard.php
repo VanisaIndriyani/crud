@@ -275,8 +275,8 @@ try {
                     </div>
                     
                     <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto;">
-                        <a href="risk_assessment.php?project_id=<?php echo $project['id']; ?>" class="btn btn-secondary" style="flex: 1 1 100%; justify-content: center; border-color: #9ccc65; color: #558b2f; background-color: #f1f8e9;" title="Risk Assessment">
-                           Risk Assessment
+                        <a href="risk_assessment.php?project_id=<?php echo $project['id']; ?>" class="btn btn-teal" style="flex: 1 1 100%; justify-content: center;" title="Risk Assessment">
+                           <i class="fas fa-clipboard-check" style="margin-right: 5px;"></i> Risk Assessment
                         </a>
                         <a href="project_details.php?id=<?php echo $project['id']; ?>" class="btn btn-primary" style="flex: 2; justify-content: center; background-color: #c0ca33; border-color: #c0ca33; color: #333;">
                             Open Project

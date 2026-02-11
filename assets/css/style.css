@@ -935,6 +935,21 @@ footer {
     z-index: 1;
 }
 
+/* Custom Buttons */
+.btn-teal {
+    background-color: #00897b;
+    color: #ffffff;
+    border: 1px solid #00897b;
+}
+
+.btn-teal:hover {
+    background-color: #00695c;
+    border-color: #004d40;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 /* Toast Notification */
 .toast-notification {
     visibility: hidden;
