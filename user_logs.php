@@ -94,7 +94,7 @@ try {
                         <?php foreach ($logs as $log): ?>
                             <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='#fcfcfc'" onmouseout="this.style.background='transparent'">
                                 <td style="padding: 1.2rem; color: var(--text-color); font-family: monospace; font-size: 0.95rem;">
-                                    <?php echo date('M d, Y H:i:s', strtotime($log['created_at'])); ?>
+                                    <?php echo date('M d, Y H:i:s', strtotime($log['created_at'])) . ' WIB'; ?>
                                 </td>
                                 <td style="padding: 1.2rem;">
                                     <div style="display: flex; align-items: center; gap: 10px;">

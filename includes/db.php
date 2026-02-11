@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Jakarta'); // Set Timezone to WIB
+
 $host = 'localhost';
 $db   = 'validation_db';
 $user = 'root';
@@ -31,6 +33,7 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+    $pdo->exec("SET time_zone = '+07:00';"); // Set MySQL Session Timezone to WIB
 } catch (\PDOException $e) {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }
