@@ -225,47 +225,62 @@ if (isset($_GET['msg'])) {
 
     .risk-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
     .risk-table th {
-        background: #f8f9fa;
+        background: #f1f5f9;
         padding: 1rem;
         text-align: left;
-        font-weight: 600;
-        color: var(--text-color);
-        border-bottom: 2px solid var(--border-color);
+        font-weight: 700;
+        color: var(--primary-dark);
+        border-bottom: 2px solid #e2e8f0;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
     }
 
     .risk-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
+        background: white;
     }
 
-    .risk-table tr:hover {
-        background-color: #fafafa;
+    .risk-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .risk-table tbody tr:hover td {
+        background-color: #f8fafc;
     }
 
     .score-badge {
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: #eee;
-        font-weight: 600;
-        font-size: 0.85rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transition: transform 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+    
+    .score-s { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .score-o { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+    .score-d { background-color: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
     .rpn-badge {
         display: inline-block;
-        padding: 4px 12px;
-        border-radius: 4px;
-        font-weight: 700;
-        min-width: 40px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 800;
+        min-width: 50px;
         text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 </style>
 
@@ -419,10 +434,10 @@ if (isset($_GET['msg'])) {
                             <thead>
                                 <tr>
                                     <th>Process / Failure Mode</th>
-                                    <th style="text-align: center;">S</th>
-                                    <th style="text-align: center;">O</th>
-                                    <th style="text-align: center;">D</th>
-                                    <th style="text-align: center;">RPN</th>
+                                    <th style="text-align: center; width: 60px;">S</th>
+                                    <th style="text-align: center; width: 60px;">O</th>
+                                    <th style="text-align: center; width: 60px;">D</th>
+                                    <th style="text-align: center; width: 80px;">RPN</th>
                                     <th>Actions</th>
                                     <th style="width: 50px;"></th>
                                 </tr>
@@ -446,24 +461,27 @@ if (isset($_GET['msg'])) {
                                         ?>
                                         <tr>
                                             <td>
-                                                <div style="font-weight: 600; color: var(--primary-dark);"><?php echo htmlspecialchars($risk['process_name']); ?></div>
-                                                <div style="font-size: 0.9rem; margin-top: 4px;"><?php echo htmlspecialchars($risk['failure_mode']); ?></div>
+                                                <div style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;"><?php echo htmlspecialchars($risk['process_name']); ?></div>
+                                                <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px; font-weight: 500;">
+                                                    <i class="fas fa-exclamation-circle" style="font-size: 0.75rem; color: #94a3b8; margin-right: 4px;"></i>
+                                                    <?php echo htmlspecialchars($risk['failure_mode']); ?>
+                                                </div>
                                                 <?php if($risk['cause_of_failure']): ?>
-                                                    <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 2px;">
-                                                        <i class="fas fa-search" style="font-size: 0.7rem;"></i> <?php echo htmlspecialchars($risk['cause_of_failure']); ?>
+                                                    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px; font-style: italic;">
+                                                        <i class="fas fa-search" style="font-size: 0.7rem; margin-right: 4px;"></i> <?php echo htmlspecialchars($risk['cause_of_failure']); ?>
                                                     </div>
                                                 <?php endif; ?>
                                             </td>
-                                            <td style="text-align: center;"><span class="score-badge"><?php echo $risk['severity']; ?></span></td>
-                                            <td style="text-align: center;"><span class="score-badge"><?php echo $risk['occurrence']; ?></span></td>
-                                            <td style="text-align: center;"><span class="score-badge"><?php echo $risk['detection']; ?></span></td>
+                                            <td style="text-align: center;"><span class="score-badge score-s" title="Severity"><?php echo $risk['severity']; ?></span></td>
+                                            <td style="text-align: center;"><span class="score-badge score-o" title="Occurrence"><?php echo $risk['occurrence']; ?></span></td>
+                                            <td style="text-align: center;"><span class="score-badge score-d" title="Detection"><?php echo $risk['detection']; ?></span></td>
                                             <td style="text-align: center;">
                                                 <div class="rpn-badge" style="<?php echo $rpnClass; ?>">
                                                     <?php echo $risk['rpn']; ?>
                                                 </div>
                                             </td>
                                             <td style="font-size: 0.9rem; color: #555;">
-                                                <?php echo nl2br(htmlspecialchars($risk['corrective_actions'])); ?>
+                                                <?php echo $risk['corrective_actions'] ? nl2br(htmlspecialchars($risk['corrective_actions'])) : '<span style="color:#cbd5e1; font-style:italic;">No actions defined</span>'; ?>
                                             </td>
                                             <td style="text-align: center;">
                                                 <form method="POST" onsubmit="return confirm('Are you sure you want to delete this risk item?');">
