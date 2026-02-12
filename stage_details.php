@@ -445,6 +445,8 @@ function updateProjectStatus($pdo, $projectId) {
                 <?php endif; ?>
             </div>
 
+            <!-- Status Notifications are now handled by Modal -->
+            <?php /* 
             <?php if (!empty($message)): ?>
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i> <?php echo $message; ?>
@@ -456,6 +458,7 @@ function updateProjectStatus($pdo, $projectId) {
                     <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
                 </div>
             <?php endif; ?>
+            */ ?>
 
             <form method="POST" enctype="multipart/form-data">
                 
@@ -765,6 +768,19 @@ function updateProjectStatus($pdo, $projectId) {
     </div>
 </div>
 
+<!-- Status Modal -->
+<div id="statusModal" class="modal" style="display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+    <div class="modal-content" style="background-color: #fff; margin: 15% auto; padding: 2rem; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center;">
+        <div style="width: 60px; height: 60px; background: <?php echo !empty($message) ? '#e8f5e9' : '#ffebee'; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+            <i class="<?php echo !empty($message) ? 'fas fa-check' : 'fas fa-exclamation'; ?>" style="font-size: 24px; color: <?php echo !empty($message) ? '#2e7d32' : '#d32f2f'; ?>;"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 0.5rem;"><?php echo !empty($message) ? 'Success' : 'Error'; ?></h3>
+        <p style="color: #666; margin-bottom: 2rem;"><?php echo !empty($message) ? $message : ($error ?? ''); ?></p>
+        
+        <button type="button" class="btn btn-primary" onclick="closeStatusModal()" style="width: 100%;">OK</button>
+    </div>
+</div>
+
 <script>
 function openDeleteModal(id) {
     document.getElementById('modal_delete_id').value = id;
@@ -792,13 +808,45 @@ function closeDeleteModal() {
     }, 300);
 }
 
+function closeStatusModal() {
+    const modalContent = document.querySelector('#statusModal .modal-content');
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+        document.getElementById('statusModal').style.display = 'none';
+    }, 300);
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('deleteModal');
-    if (event.target == modal) {
+    const deleteModal = document.getElementById('deleteModal');
+    const statusModal = document.getElementById('statusModal');
+    if (event.target == deleteModal) {
         closeDeleteModal();
     }
+    if (event.target == statusModal) {
+        closeStatusModal();
+    }
 }
+
+<?php if (!empty($message) || isset($error)): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusModal = document.getElementById('statusModal');
+    statusModal.style.display = 'block';
+    
+    // Animation
+    const modalContent = document.querySelector('#statusModal .modal-content');
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = 'scale(0.8)';
+    modalContent.style.transition = 'all 0.3s ease';
+    
+    setTimeout(() => {
+        modalContent.style.opacity = '1';
+        modalContent.style.transform = 'scale(1)';
+    }, 10);
+});
+<?php endif; ?>
 </script>
 
 <?php include 'includes/footer.php'; ?>
