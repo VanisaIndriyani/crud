@@ -60,9 +60,38 @@ if ($stage_id) {
 
 // Handle Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
-    $action = $_POST['action'] ?? '';
-    
-    // Handle URS Details Save
+    try {
+        if (isset($_POST['delete_document_id'])) {
+            // Handle Document Deletion
+            $docId = $_POST['delete_document_id'];
+            
+            // Verify document belongs to this stage
+            $stmtCheck = $pdo->prepare("SELECT file_path FROM stage_documents WHERE id = :id AND stage_id = :stage_id");
+            $stmtCheck->execute(['id' => $docId, 'stage_id' => $stage_id]);
+            $docToDelete = $stmtCheck->fetch();
+
+            if ($docToDelete) {
+                // Delete file from server
+                if (file_exists($docToDelete['file_path'])) {
+                    unlink($docToDelete['file_path']);
+                }
+                
+                // Delete record from database
+                $stmtDel = $pdo->prepare("DELETE FROM stage_documents WHERE id = :id");
+                $stmtDel->execute(['id' => $docId]);
+                
+                // Refresh documents list
+                $stmtDocs->execute(['id' => $stage_id]);
+                $documents = $stmtDocs->fetchAll();
+                
+                $message = "Document deleted successfully.";
+            } else {
+                $error = "Document not found or invalid.";
+            }
+        } else {
+            $action = $_POST['action'] ?? '';
+        
+            // Handle URS Details Save
     if ($stage['name'] === 'User Request Specification') {
         $requestor_name = $_POST['requestor_name'] ?? '';
         $requestor_department = $_POST['requestor_department'] ?? '';
@@ -218,11 +247,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
         $reviewed_by = !empty($_POST['reviewed_by']) ? $_POST['reviewed_by'] : null;
         $approved_by = !empty($_POST['approved_by']) ? $_POST['approved_by'] : null;
         
-        // Logic for dates: Update date only if ID is provided. 
-        // In a real system, we'd check if it changed, but for now update timestamp is fine.
-        $prepared_date = $prepared_by ? date('Y-m-d H:i:s') : null;
-        $reviewed_date = $reviewed_by ? date('Y-m-d H:i:s') : null;
-        $approved_date = $approved_by ? date('Y-m-d H:i:s') : null;
+        // Logic for dates: Update date only if ID is provided.
+        // Use existing date if available, otherwise use NOW()
+        $existing_prep_date = $validation_report_details['prepared_date'] ?? null;
+        $prepared_date = $prepared_by ? ($existing_prep_date ?: date('Y-m-d H:i:s')) : null;
+
+        $existing_rev_date = $validation_report_details['reviewed_date'] ?? null;
+        $reviewed_date = $reviewed_by ? ($existing_rev_date ?: date('Y-m-d H:i:s')) : null;
+
+        $existing_appr_date = $validation_report_details['approved_date'] ?? null;
+        $approved_date = $approved_by ? ($existing_appr_date ?: date('Y-m-d H:i:s')) : null;
 
         if ($validation_report_details) {
             $stmt = $pdo->prepare("UPDATE stage_validation_report_details SET 
@@ -231,16 +265,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
                 deviation = :deviation, 
                 recommendation = :recommendation, 
                 prepared_by = :prep,
-                prepared_date = IF(:prep IS NOT NULL, COALESCE(prepared_date, NOW()), NULL),
+                prepared_date = :prep_date,
                 reviewed_by = :rev,
-                reviewed_date = IF(:rev IS NOT NULL, COALESCE(reviewed_date, NOW()), NULL),
+                reviewed_date = :rev_date,
                 approved_by = :appr,
-                approved_date = IF(:appr IS NOT NULL, COALESCE(approved_date, NOW()), NULL)
+                approved_date = :appr_date
                 WHERE stage_id = :id");
         } else {
             $stmt = $pdo->prepare("INSERT INTO stage_validation_report_details 
                 (stage_id, executive_summary, overall_result, deviation, recommendation, prepared_by, prepared_date, reviewed_by, reviewed_date, approved_by, approved_date) 
-                VALUES (:id, :summary, :result, :deviation, :recommendation, :prep, NOW(), :rev, NOW(), :appr, NOW())");
+                VALUES (:id, :summary, :result, :deviation, :recommendation, :prep, :prep_date, :rev, :rev_date, :appr, :appr_date)");
         }
         
         $stmt->execute([
@@ -250,8 +284,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
             'deviation' => $deviation,
             'recommendation' => $recommendation,
             'prep' => $prepared_by,
+            'prep_date' => $prepared_date,
             'rev' => $reviewed_by,
-            'appr' => $approved_by
+            'rev_date' => $reviewed_date,
+            'appr' => $approved_by,
+            'appr_date' => $approved_date
         ]);
 
         // Refresh Validation Report details
@@ -325,6 +362,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
 
         // Update Parent Project Status
         updateProjectStatus($pdo, $stage['project_id']);
+    }
+    }
+    } catch (Exception $e) {
+        $error = "System Error: " . $e->getMessage();
     }
 }
 
@@ -669,13 +710,18 @@ function updateProjectStatus($pdo, $projectId) {
                             <?php foreach ($documents as $doc): ?>
                                 <div class="document-item">
                                     <i class="fas fa-file-alt document-icon"></i>
-                                    <div class="document-info">
+                                    <div class="document-info" style="flex-grow: 1;">
                                         <div class="document-name"><?php echo htmlspecialchars($doc['file_name']); ?></div>
                                         <div class="document-meta"><?php echo date('M d, Y H:i', strtotime($doc['uploaded_at'])); ?></div>
                                     </div>
-                                    <a href="download.php?id=<?php echo $doc['id']; ?>" class="btn btn-sm btn-accent" style="border: none; color: var(--primary-color);">
-                                        <i class="fas fa-download"></i>
-                                    </a>
+                                    <div class="doc-actions" style="display: flex; gap: 10px;">
+                                        <a href="download.php?id=<?php echo $doc['id']; ?>" class="btn btn-sm btn-secondary" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="openDeleteModal(<?php echo $doc['id']; ?>)" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -699,5 +745,60 @@ function updateProjectStatus($pdo, $projectId) {
         <a href="dashboard.php" class="btn btn-primary" style="margin-top: 1rem;">Return to Dashboard</a>
     </div>
 <?php endif; ?>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+    <div class="modal-content" style="background-color: #fff; margin: 15% auto; padding: 2rem; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center;">
+        <div style="width: 60px; height: 60px; background: #ffebee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+            <i class="fas fa-trash-alt" style="font-size: 24px; color: #d32f2f;"></i>
+        </div>
+        <h3 style="color: #333; margin-bottom: 0.5rem;">Delete Document?</h3>
+        <p style="color: #666; margin-bottom: 2rem;">Are you sure you want to delete this document? This action cannot be undone.</p>
+        
+        <form method="POST" id="deleteForm">
+            <input type="hidden" name="delete_document_id" id="modal_delete_id">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" style="flex: 1;">Cancel</button>
+                <button type="submit" class="btn btn-danger" style="flex: 1;">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDeleteModal(id) {
+    document.getElementById('modal_delete_id').value = id;
+    document.getElementById('deleteModal').style.display = 'block';
+    
+    // Animation
+    const modalContent = document.querySelector('#deleteModal .modal-content');
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = 'scale(0.8)';
+    modalContent.style.transition = 'all 0.3s ease';
+    
+    setTimeout(() => {
+        modalContent.style.opacity = '1';
+        modalContent.style.transform = 'scale(1)';
+    }, 10);
+}
+
+function closeDeleteModal() {
+    const modalContent = document.querySelector('#deleteModal .modal-content');
+    modalContent.style.opacity = '0';
+    modalContent.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+        document.getElementById('deleteModal').style.display = 'none';
+    }, 300);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target == modal) {
+        closeDeleteModal();
+    }
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

@@ -143,9 +143,14 @@ try {
                                     </div>
                                 </td>
                                 <td style="padding: 1.5rem 1.2rem; text-align: center;">
-                                    <a href="view_report.php?id=<?php echo $report['doc_id']; ?>" target="_blank" class="btn btn-accent" style="padding: 8px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;">
-                                        <i class="far fa-eye" style="margin-right: 6px;"></i> View Report
-                                    </a>
+                                    <div style="display: flex; gap: 8px; justify-content: center;">
+                                        <a href="view_report.php?id=<?php echo $report['doc_id']; ?>" target="_blank" class="btn btn-accent" style="padding: 8px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; white-space: nowrap;">
+                                            <i class="far fa-eye" style="margin-right: 4px;"></i> View
+                                        </a>
+                                        <button onclick="sendEmail('<?php echo htmlspecialchars(addslashes($report['project_name'])); ?>', '<?php echo htmlspecialchars(addslashes($report['software'])); ?>', '<?php echo htmlspecialchars(addslashes($report['version'])); ?>', '<?php echo htmlspecialchars(addslashes($report['file_path'])); ?>', '<?php echo htmlspecialchars(addslashes($report['file_name'])); ?>')" class="btn" style="padding: 8px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; background: #ffa000; color: white; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; cursor: pointer; display: flex; align-items: center; white-space: nowrap;">
+                                            <i class="far fa-envelope" style="margin-right: 4px;"></i> Email
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -174,5 +179,16 @@ try {
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function sendEmail(projectName, software, version, filePath, fileName) {
+    const subject = `Laporan Validasi: ${projectName}`;
+    const body = `Halo,\n\nBerikut adalah informasi bahwa Laporan Validasi telah tersedia untuk:\nProyek: ${projectName}\nSoftware: ${software} v${version}\n\nTerima kasih.`;
+    
+    // Open Gmail Compose in new tab
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>
