@@ -185,9 +185,9 @@ function sendEmail(projectName, software, version, filePath, fileName) {
     const subject = `Laporan Validasi: ${projectName}`;
     const body = `Dear,\n\nBerikut adalah informasi bahwa Laporan Validasi telah tersedia untuk:\nProyek: ${projectName}\nSoftware: ${software} v${version}\n\nTerima kasih.`;
     
-    // Open Gmail Compose in new tab
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(gmailUrl, '_blank');
+    // Open Default Email Client (e.g. MS Outlook)
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
 }
 </script>
 
