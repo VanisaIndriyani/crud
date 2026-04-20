@@ -34,7 +34,7 @@ try {
         $p1Id = $pdo->lastInsertId();
         
         // Create Stages for P1
-        $stages = ['User Request Specification', 'IQ - Installation Qualification', 'OQ - Operational Qualification', 'PQ - Performance Qualification', 'Laporan Validasi'];
+        $stages = ['User Request Specification', 'IQ - Installation Qualification', 'OQ - Operational Qualification', 'PQ - Performance Qualification', 'Validation Report'];
         foreach ($stages as $stageName) {
             $status = 'Not Started';
             if ($stageName == 'User Request Specification') $status = 'Completed';
@@ -112,7 +112,7 @@ try {
         $p2Id = $pdo->lastInsertId();
 
         // Create Stages for P2
-        $stages = ['User Request Specification', 'IQ - Installation Qualification', 'OQ - Operational Qualification', 'PQ - Performance Qualification', 'Laporan Validasi'];
+        $stages = ['User Request Specification', 'IQ - Installation Qualification', 'OQ - Operational Qualification', 'PQ - Performance Qualification', 'Validation Report'];
         foreach ($stages as $stageName) {
             $status = 'Not Started';
             if ($stageName == 'User Request Specification') $status = 'Completed';

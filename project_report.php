@@ -2,6 +2,13 @@
 require_once 'includes/db.php';
 include 'includes/header.php'; 
 
+function getStageDisplayName(string $stageName): string {
+    return match ($stageName) {
+        'Laporan Validasi' => 'Validation Report',
+        default => $stageName
+    };
+}
+
 $project_id = $_GET['id'] ?? 0;
 $project = null;
 $stages = [];
@@ -67,6 +74,18 @@ if ($project_id) {
                     <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem;">Version</div>
                     <div style="font-weight: 600;"><?php echo htmlspecialchars($project['version']); ?></div>
                 </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem;">Validator Name</div>
+                    <div style="font-weight: 600;"><?php echo htmlspecialchars($project['validator_name'] ?? '-'); ?></div>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem;">Validation Plan Date</div>
+                    <div style="font-weight: 600;"><?php echo !empty($project['validation_plan_date'] ?? null) ? htmlspecialchars(date('M d, Y', strtotime($project['validation_plan_date']))) : '-'; ?></div>
+                </div>
+                <div>
+                    <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem;">Department</div>
+                    <div style="font-weight: 600;"><?php echo htmlspecialchars($project['department'] ?? '-'); ?></div>
+                </div>
             </div>
 
             <div style="margin-bottom: 2rem; background: #f9fbe7; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--accent-color);">
@@ -101,7 +120,7 @@ if ($project_id) {
                                 <i class="far fa-circle" style="color: var(--text-light); font-size: 1.2rem;"></i>
                             <?php endif; ?>
                             
-                            <span style="font-weight: 600; color: <?php echo $stage['status'] === 'Completed' ? 'var(--primary-dark)' : 'var(--text-color)'; ?>;"><?php echo htmlspecialchars($stage['name']); ?></span>
+                            <span style="font-weight: 600; color: <?php echo $stage['status'] === 'Completed' ? 'var(--primary-dark)' : 'var(--text-color)'; ?>;"><?php echo htmlspecialchars(getStageDisplayName($stage['name'])); ?></span>
                         </div>
                         
                         <?php if ($stage['status'] === 'Completed'): ?>
@@ -128,7 +147,7 @@ if ($project_id) {
                             <?php else: ?>
                                 <i class="far fa-circle" style="color: var(--text-light);"></i>
                             <?php endif; ?>
-                            <h4 style="margin: 0; font-size: 1rem; color: <?php echo $stage['status'] === 'Completed' ? 'var(--primary-dark)' : 'var(--text-color)'; ?>;"><?php echo htmlspecialchars($stage['name']); ?></h4>
+                            <h4 style="margin: 0; font-size: 1rem; color: <?php echo $stage['status'] === 'Completed' ? 'var(--primary-dark)' : 'var(--text-color)'; ?>;"><?php echo htmlspecialchars(getStageDisplayName($stage['name'])); ?></h4>
                         </div>
                         
                         <div style="padding-left: 2rem; color: var(--text-light); font-style: italic; font-size: 0.95rem;">

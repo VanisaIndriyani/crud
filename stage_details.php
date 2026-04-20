@@ -50,7 +50,7 @@ if ($stage_id) {
             $stmtPQ = $pdo->prepare("SELECT * FROM stage_pq_details WHERE stage_id = :id");
             $stmtPQ->execute(['id' => $stage_id]);
             $pq_details = $stmtPQ->fetch();
-        } elseif ($stage['name'] === 'Laporan Validasi') {
+        } elseif (in_array($stage['name'], ['Validation Report', 'Laporan Validasi'], true)) {
             $stmtVal = $pdo->prepare("SELECT * FROM stage_validation_report_details WHERE stage_id = :id");
             $stmtVal->execute(['id' => $stage_id]);
             $validation_report_details = $stmtVal->fetch();
@@ -237,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $stage) {
         $stmtPQ = $pdo->prepare("SELECT * FROM stage_pq_details WHERE stage_id = :id");
         $stmtPQ->execute(['id' => $stage_id]);
         $pq_details = $stmtPQ->fetch();
-    } elseif ($stage['name'] === 'Laporan Validasi') {
+    } elseif (in_array($stage['name'], ['Validation Report', 'Laporan Validasi'], true)) {
         $executive_summary = $_POST['executive_summary'] ?? '';
         $overall_result = $_POST['overall_result'] ?? '';
         $deviation = $_POST['deviation'] ?? '';
@@ -398,6 +398,13 @@ function updateProjectStatus($pdo, $projectId) {
     $stmtUpdate = $pdo->prepare("UPDATE projects SET status = :status WHERE id = :id");
     $stmtUpdate->execute(['status' => $newStatus, 'id' => $projectId]);
 }
+
+function getStageDisplayName(string $stageName): string {
+    return match ($stageName) {
+        'Laporan Validasi' => 'Validation Report',
+        default => $stageName
+    };
+}
 ?>
 
 <?php if ($stage): ?>
@@ -410,7 +417,7 @@ function updateProjectStatus($pdo, $projectId) {
             
             <div class="project-detail-header">
                 <div>
-                    <h1 class="stage-title"><?php echo htmlspecialchars($stage['name']); ?></h1>
+                    <h1 class="stage-title"><?php echo htmlspecialchars(getStageDisplayName($stage['name'])); ?></h1>
                     <div class="badge badge-<?php 
                         echo match($stage['status']) {
                             'Completed' => 'success',
@@ -423,8 +430,9 @@ function updateProjectStatus($pdo, $projectId) {
                 </div>
                 
                 <?php 
+                $is_validation_report_stage = in_array($stage['name'], ['Validation Report', 'Laporan Validasi'], true);
                 $is_approved = false;
-                if ($stage['name'] === 'Laporan Validasi' && $validation_report_details) {
+                if ($is_validation_report_stage && $validation_report_details) {
                     $is_approved = !empty($validation_report_details['prepared_by']) && 
                                    !empty($validation_report_details['reviewed_by']) && 
                                    !empty($validation_report_details['approved_by']);
@@ -507,103 +515,103 @@ function updateProjectStatus($pdo, $projectId) {
                 <?php elseif ($stage['name'] === 'IQ - Installation Qualification'): ?>
                     <!-- IQ Specific Form -->
                     <div class="form-group">
-                        <label>Tanggal Instalasi <span style="color: var(--danger-color)">*</span></label>
+                        <label>Installation Date <span style="color: var(--danger-color)">*</span></label>
                         <input type="date" name="installation_date" value="<?php echo htmlspecialchars($iq_details['installation_date'] ?? ''); ?>" required class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>Verifikasi Hardware <span style="color: var(--danger-color)">*</span></label>
+                        <label>Hardware Verification <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="hardware_verification" rows="4" required class="form-control"><?php echo htmlspecialchars($iq_details['hardware_verification'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Verifikasi Software <span style="color: var(--danger-color)">*</span></label>
+                        <label>Software Verification <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="software_verification" rows="4" required class="form-control"><?php echo htmlspecialchars($iq_details['software_verification'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Dokumentasi <span style="color: var(--danger-color)">*</span></label>
+                        <label>Documentation <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="documentation" rows="4" required class="form-control"><?php echo htmlspecialchars($iq_details['documentation'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Hasil IQ <span style="color: var(--danger-color)">*</span></label>
+                        <label>IQ Result <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="iq_result" rows="4" required class="form-control"><?php echo htmlspecialchars($iq_details['iq_result'] ?? ''); ?></textarea>
                     </div>
 
                 <?php elseif ($stage['name'] === 'OQ - Operational Qualification'): ?>
                     <!-- OQ Specific Form -->
                     <div class="form-group">
-                        <label>Tanggal Pengujian <span style="color: var(--danger-color)">*</span></label>
+                        <label>Test Date <span style="color: var(--danger-color)">*</span></label>
                         <input type="date" name="test_date" value="<?php echo htmlspecialchars($oq_details['test_date'] ?? ''); ?>" required class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>Pengujian Fungsi Utama <span style="color: var(--danger-color)">*</span></label>
+                        <label>Main Function Test <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="main_function_test" rows="4" required class="form-control"><?php echo htmlspecialchars($oq_details['main_function_test'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Pengujian Interface <span style="color: var(--danger-color)">*</span></label>
+                        <label>Interface Test <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="interface_test" rows="4" required class="form-control"><?php echo htmlspecialchars($oq_details['interface_test'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Pengujian Keamanan <span style="color: var(--danger-color)">*</span></label>
+                        <label>Security Test <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="security_test" rows="4" required class="form-control"><?php echo htmlspecialchars($oq_details['security_test'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Hasil OQ <span style="color: var(--danger-color)">*</span></label>
+                        <label>OQ Result <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="oq_result" rows="4" required class="form-control"><?php echo htmlspecialchars($oq_details['oq_result'] ?? ''); ?></textarea>
                     </div>
 
                 <?php elseif ($stage['name'] === 'PQ - Performance Qualification'): ?>
                     <!-- PQ Specific Form -->
                     <div class="form-group">
-                        <label>Tanggal Pengujian <span style="color: var(--danger-color)">*</span></label>
+                        <label>Test Date <span style="color: var(--danger-color)">*</span></label>
                         <input type="date" name="test_date" value="<?php echo htmlspecialchars($pq_details['test_date'] ?? ''); ?>" required class="form-control">
                     </div>
 
                     <div class="form-group">
-                        <label>Skenario Pengujian <span style="color: var(--danger-color)">*</span></label>
+                        <label>Test Scenario <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="test_scenario" rows="4" required class="form-control"><?php echo htmlspecialchars($pq_details['test_scenario'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Data Pengujian <span style="color: var(--danger-color)">*</span></label>
+                        <label>Test Data <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="test_data" rows="4" required class="form-control"><?php echo htmlspecialchars($pq_details['test_data'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Hasil Kinerja <span style="color: var(--danger-color)">*</span></label>
+                        <label>Performance Result <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="performance_result" rows="4" required class="form-control"><?php echo htmlspecialchars($pq_details['performance_result'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Kesimpulan PQ <span style="color: var(--danger-color)">*</span></label>
+                        <label>PQ Conclusion <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="pq_conclusion" rows="4" required class="form-control"><?php echo htmlspecialchars($pq_details['pq_conclusion'] ?? ''); ?></textarea>
                     </div>
 
-                <?php elseif ($stage['name'] === 'Laporan Validasi'): ?>
+                <?php elseif (in_array($stage['name'], ['Validation Report', 'Laporan Validasi'], true)): ?>
                     <!-- Validation Report Specific Form -->
                     <div class="form-group">
-                        <label>Ringkasan Eksekutif <span style="color: var(--danger-color)">*</span></label>
+                        <label>Executive Summary <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="executive_summary" rows="4" required class="form-control"><?php echo htmlspecialchars($validation_report_details['executive_summary'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Hasil Keseluruhan <span style="color: var(--danger-color)">*</span></label>
+                        <label>Overall Result <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="overall_result" rows="4" required class="form-control"><?php echo htmlspecialchars($validation_report_details['overall_result'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Deviasi (jika ada)</label>
+                        <label>Deviation (if any)</label>
                         <textarea name="deviation" rows="4" class="form-control"><?php echo htmlspecialchars($validation_report_details['deviation'] ?? ''); ?></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Rekomendasi <span style="color: var(--danger-color)">*</span></label>
+                        <label>Recommendation <span style="color: var(--danger-color)">*</span></label>
                         <textarea name="recommendation" rows="4" required class="form-control"><?php echo htmlspecialchars($validation_report_details['recommendation'] ?? ''); ?></textarea>
                     </div>
 
@@ -649,7 +657,7 @@ function updateProjectStatus($pdo, $projectId) {
                             <!-- Hidden Form -->
                             <div id="approval-form-section" style="display: none; margin-top: 1.5rem; border-top: 1px solid #ddd; padding-top: 1rem;">
                                 <div class="form-group">
-                                    <label>Prepared By (Dibuat Oleh)</label>
+                                    <label>Prepared By</label>
                                     <select name="prepared_by" class="form-control">
                                         <option value="">Select User</option>
                                         <?php foreach ($all_users as $user): ?>
@@ -660,7 +668,7 @@ function updateProjectStatus($pdo, $projectId) {
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Acknowledged By (Mengetahui)</label>
+                                    <label>Acknowledged By</label>
                                     <select name="reviewed_by" class="form-control">
                                         <option value="">Select User</option>
                                         <?php foreach ($all_users as $user): ?>
@@ -671,7 +679,7 @@ function updateProjectStatus($pdo, $projectId) {
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Approved By (Menyetujui)</label>
+                                    <label>Approved By</label>
                                     <select name="approved_by" class="form-control">
                                         <option value="">Select User</option>
                                         <?php foreach ($all_users as $user): ?>

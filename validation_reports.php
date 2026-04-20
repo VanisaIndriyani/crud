@@ -3,7 +3,7 @@ require_once 'includes/db.php';
 include 'includes/header.php';
 
 // Fetch Completed Validation Reports
-// Logic: Get projects where 'Laporan Validasi' stage is Completed and has a document
+// Logic: Get projects where the Validation Report stage is Completed and has a document
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 5;
 $offset = ($page - 1) * $limit;
@@ -17,7 +17,7 @@ try {
         FROM projects p
         JOIN project_stages ps ON p.id = ps.project_id
         JOIN stage_documents sd ON ps.id = sd.stage_id
-        WHERE ps.name = 'Laporan Validasi' 
+        WHERE ps.name IN ('Validation Report', 'Laporan Validasi')
           AND ps.status = 'Completed'
           AND sd.uploaded_at = (
               SELECT MAX(uploaded_at) 
@@ -41,7 +41,7 @@ try {
         FROM projects p
         JOIN project_stages ps ON p.id = ps.project_id
         JOIN stage_documents sd ON ps.id = sd.stage_id
-        WHERE ps.name = 'Laporan Validasi' 
+        WHERE ps.name IN ('Validation Report', 'Laporan Validasi')
           AND ps.status = 'Completed'
           AND sd.uploaded_at = (
               SELECT MAX(uploaded_at) 
@@ -182,8 +182,8 @@ try {
 
 <script>
 function sendEmail(projectName, software, version, filePath, fileName) {
-    const subject = `Laporan Validasi: ${projectName}`;
-    const body = `Dear,\n\nBerikut adalah informasi bahwa Laporan Validasi telah tersedia untuk:\nProyek: ${projectName}\nSoftware: ${software} v${version}\n\nTerima kasih.`;
+    const subject = `Validation Report: ${projectName}`;
+    const body = `Dear,\n\nThis is to inform you that the Validation Report is now available for:\nProject: ${projectName}\nSoftware: ${software} v${version}\n\nThank you.`;
     
     // Open Default Email Client (e.g. MS Outlook)
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

@@ -2,6 +2,13 @@
 require_once 'includes/db.php';
 include 'includes/header.php'; 
 
+function getStageDisplayName(string $stageName): string {
+    return match ($stageName) {
+        'Laporan Validasi' => 'Validation Report',
+        default => $stageName
+    };
+}
+
 $project_id = $_GET['id'] ?? 0;
 $project = null;
 $stages = [];
@@ -53,6 +60,17 @@ if ($project_id) {
                             <i class="fas fa-laptop-code"></i> <?php echo htmlspecialchars($project['software']); ?>
                         </span>
                     </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                        <span class="badge badge-secondary">
+                            <i class="fas fa-user-check"></i> Validator: <?php echo htmlspecialchars($project['validator_name'] ?? '-'); ?>
+                        </span>
+                        <span class="badge badge-secondary">
+                            <i class="far fa-calendar"></i> Validation Plan Date: <?php echo !empty($project['validation_plan_date'] ?? null) ? htmlspecialchars(date('M d, Y', strtotime($project['validation_plan_date']))) : '-'; ?>
+                        </span>
+                        <span class="badge badge-secondary">
+                            <i class="fas fa-building"></i> Dept: <?php echo htmlspecialchars($project['department'] ?? '-'); ?>
+                        </span>
+                    </div>
                 </div>
 
                 <?php 
@@ -90,7 +108,7 @@ if ($project_id) {
                     <a href="stage_details.php?id=<?php echo $stage['id']; ?>" class="stage-item <?php echo $statusClass; ?>" style="flex-grow: 1;">
                         <div class="stage-number"><?php echo $index + 1; ?></div>
                         <div class="stage-info">
-                            <div class="stage-title"><?php echo htmlspecialchars($stage['name']); ?></div>
+                            <div class="stage-title"><?php echo htmlspecialchars(getStageDisplayName($stage['name'])); ?></div>
                             <div class="stage-status" style="color: <?php echo $statusColor; ?>">
                                 <?php echo $stage['status']; ?>
                             </div>

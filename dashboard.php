@@ -2,6 +2,21 @@
 require_once 'includes/db.php';
 include 'includes/header.php'; 
 
+function ensureProjectMetadataColumns(PDO $pdo): void {
+    $columns = [
+        'validator_name' => 'VARCHAR(255) DEFAULT NULL',
+        'validation_plan_date' => 'DATE DEFAULT NULL',
+        'department' => 'VARCHAR(255) DEFAULT NULL'
+    ];
+
+    foreach ($columns as $col => $def) {
+        $stmt = $pdo->query("SHOW COLUMNS FROM projects LIKE " . $pdo->quote($col));
+        if (!$stmt->fetch()) {
+            $pdo->exec("ALTER TABLE projects ADD COLUMN $col $def");
+        }
+    }
+}
+
 // Handle Create Project
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'create_project') {
@@ -9,18 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $software = $_POST['software'] ?? '';
         $version = $_POST['version'] ?? '';
         $description = $_POST['description'] ?? '';
+        $validator_name = $_POST['validator_name'] ?? '';
+        $validation_plan_date = $_POST['validation_plan_date'] ?? '';
+        $department = $_POST['department'] ?? '';
 
-        if ($name && $software) {
+        if ($name && $software && $validator_name && $validation_plan_date && $department) {
             try {
+                ensureProjectMetadataColumns($pdo);
                 $pdo->beginTransaction();
 
                 // Insert Project
-                $stmt = $pdo->prepare("INSERT INTO projects (name, software, version, description, status, created_by) VALUES (:name, :software, :version, :description, 'Draft', :created_by)");
+                $stmt = $pdo->prepare("INSERT INTO projects (name, software, version, description, validator_name, validation_plan_date, department, status, created_by) VALUES (:name, :software, :version, :description, :validator_name, :validation_plan_date, :department, 'Draft', :created_by)");
                 $stmt->execute([
                     'name' => $name,
                     'software' => $software,
                     'version' => $version,
                     'description' => $description,
+                    'validator_name' => $validator_name,
+                    'validation_plan_date' => $validation_plan_date,
+                    'department' => $department,
                     'created_by' => $_SESSION['user_id']
                 ]);
                 $projectId = $pdo->lastInsertId();
@@ -31,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     'IQ - Installation Qualification',
                     'OQ - Operational Qualification',
                     'PQ - Performance Qualification',
-                    'Laporan Validasi'
+                    'Validation Report'
                 ];
 
                 $stmtStage = $pdo->prepare("INSERT INTO project_stages (project_id, name, status) VALUES (:project_id, :name, 'Not Started')");
@@ -52,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $error = "Failed to create project: " . $e->getMessage();
             }
         } else {
-            $error = "Project Name and Software Name are required.";
+            $error = "Project Name, Software Name, Validator Name, Validation Plan Date, and Department are required.";
         }
     } elseif ($_POST['action'] === 'add_user' && isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
         $username = $_POST['username'] ?? '';
@@ -308,7 +330,7 @@ try {
 
                     <?php if (!empty($project['risk_level']) && $project['risk_level'] == 'High'): ?>
                         <div style="margin-top: 10px; text-align: center;">
-                            <span style="font-size: 0.75rem; color: #e53935; font-weight: bold; border: 1px solid #e53935; padding: 2px 5px; border-radius: 4px;">Revalidasi Active (1 Thn)</span>
+                            <span style="font-size: 0.75rem; color: #e53935; font-weight: bold; border: 1px solid #e53935; padding: 2px 5px; border-radius: 4px;">Revalidation Active (1 Year)</span>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -364,6 +386,18 @@ try {
             <div class="form-group">
                 <label>Description</label>
                 <textarea name="description" rows="3" placeholder="Brief description of the validation scope..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Validator Name <span style="color: var(--danger-color)">*</span></label>
+                <input type="text" name="validator_name" placeholder="e.g., John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>Validation Plan Date <span style="color: var(--danger-color)">*</span></label>
+                <input type="date" name="validation_plan_date" required>
+            </div>
+            <div class="form-group">
+                <label>Department <span style="color: var(--danger-color)">*</span></label>
+                <input type="text" name="department" placeholder="e.g., Quality Assurance" required>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 1rem;">
                 <button type="button" class="btn btn-accent" style="flex: 1; color: var(--danger-color); font-weight: 700;" onclick="closeModal('newProjectModal')">Cancel</button>

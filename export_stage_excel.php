@@ -24,6 +24,38 @@ if (!$stage) {
     die("Stage not found.");
 }
 
+$docPrefix = 'VEA-FR-MIT';
+$docCodeByStageName = [
+    'User Request Specification' => '03',
+    'IQ - Installation Qualification' => '10',
+    'Validation Report' => '12',
+    'Laporan Validasi' => '12',
+    'OQ - Operational Qualification' => '23',
+    'PQ - Performance Qualification' => '25',
+];
+$docHeaderTitleByStageName = [
+    'User Request Specification' => 'User Request Report',
+    'IQ - Installation Qualification' => 'Installation Qualification Report',
+    'Validation Report' => 'Validation Report',
+    'Laporan Validasi' => 'Validation Report',
+    'OQ - Operational Qualification' => 'Operational Qualification Report',
+    'PQ - Performance Qualification' => 'Performance Qualification Report',
+];
+$docDisplayStageNameByStageName = [
+    'User Request Specification' => 'User Request Specification',
+    'IQ - Installation Qualification' => 'Installation Qualification',
+    'Validation Report' => 'Validation Report',
+    'Laporan Validasi' => 'Validation Report',
+    'OQ - Operational Qualification' => 'Operational Qualification',
+    'PQ - Performance Qualification' => 'Performance Qualification',
+];
+$docRevision = '0a';
+$effectiveDateText = '17 March 2026';
+
+$docCode = $docCodeByStageName[$stage['name']] ?? '00';
+$docHeaderTitle = $docHeaderTitleByStageName[$stage['name']] ?? ($stage['name'] . ' Report');
+$docDisplayStageName = $docDisplayStageNameByStageName[$stage['name']] ?? $stage['name'];
+
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
@@ -82,22 +114,6 @@ $valueStyle = [
     ],
 ];
 
-// Set Title
-$sheet->setCellValue('A1', $stage['project_name']);
-$sheet->setCellValue('A2', $stage['name']);
-$sheet->setCellValue('A3', 'Created By: ' . ($stage['creator_name'] ?? 'Unknown'));
-$sheet->mergeCells('A1:B1');
-$sheet->mergeCells('A2:B2');
-$sheet->mergeCells('A3:B3');
-
-$sheet->getStyle('A1')->applyFromArray($headerStyle);
-$sheet->getStyle('A2')->applyFromArray($subHeaderStyle);
-$sheet->getStyle('A3')->applyFromArray($subHeaderStyle);
-
-$sheet->getRowDimension(1)->setRowHeight(30);
-$sheet->getRowDimension(2)->setRowHeight(25);
-$sheet->getRowDimension(3)->setRowHeight(25);
-
 $row = 5;
 $data = null;
 $fields = [];
@@ -154,7 +170,7 @@ if ($stage['name'] === 'User Request Specification') {
         'Performance Result' => 'performance_result',
         'PQ Conclusion' => 'pq_conclusion'
     ];
-} elseif ($stage['name'] === 'Laporan Validasi') {
+} elseif (in_array($stage['name'], ['Validation Report', 'Laporan Validasi'], true)) {
     $stmt = $pdo->prepare("
         SELECT d.*, 
                u1.username as prep_name, 
@@ -191,28 +207,148 @@ if ($stage['name'] === 'User Request Specification') {
     $data = $stage;
 }
 
+$topLineStyle = [
+    'font' => ['size' => 10],
+    'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_LEFT,
+        'vertical' => Alignment::VERTICAL_CENTER,
+        'wrapText' => true
+    ],
+];
+
+$blueHeaderStyle = [
+    'font' => [
+        'bold' => true,
+        'size' => 16,
+        'color' => ['argb' => 'FFFFFFFF'],
+    ],
+    'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => ['argb' => 'FF1F4E79'],
+    ],
+    'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER,
+    ],
+];
+
+$greenBarStyle = [
+    'font' => [
+        'bold' => true,
+        'size' => 12,
+        'color' => ['argb' => 'FFFFFFFF'],
+    ],
+    'fill' => [
+        'fillType' => Fill::FILL_SOLID,
+        'startColor' => ['argb' => 'FF00B050'],
+    ],
+    'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_LEFT,
+        'vertical' => Alignment::VERTICAL_CENTER,
+    ],
+];
+
+$noteStyle = [
+    'font' => ['size' => 8],
+    'alignment' => [
+        'horizontal' => Alignment::HORIZONTAL_LEFT,
+        'vertical' => Alignment::VERTICAL_TOP,
+        'wrapText' => true
+    ],
+];
+
+$sheet->setCellValue('A1', 'PT Vision Ease Asia, ' . $docPrefix . '-' . $docCode . ' ' . $docHeaderTitle . ', Rev : ' . $docRevision . ', Tgl Efektif : ' . $effectiveDateText);
+$sheet->mergeCells('A1:B1');
+$sheet->getStyle('A1')->applyFromArray($topLineStyle);
+$sheet->getRowDimension(1)->setRowHeight(15);
+
+$sheet->setCellValue('A2', 'Software Validation System');
+$sheet->mergeCells('A2:B2');
+$sheet->getStyle('A2')->applyFromArray($blueHeaderStyle);
+$sheet->getRowDimension(2)->setRowHeight(30);
+
+$sheet->setCellValue('A3', $stage['name']);
+$sheet->mergeCells('A3:B3');
+$sheet->getStyle('A3')->applyFromArray($greenBarStyle);
+$sheet->getRowDimension(3)->setRowHeight(25);
+
+$sheet->setCellValue('A4', 'Created By: ' . ($stage['creator_name'] ?? 'Unknown'));
+$sheet->mergeCells('A4:B4');
+$sheet->getStyle('A4')->applyFromArray($greenBarStyle);
+$sheet->getRowDimension(4)->setRowHeight(25);
+
+$sheet->getRowDimension(5)->setRowHeight(8);
+$row = 6;
+
+$largeTextKeys = [
+    'software_purpose',
+    'functional_requirements',
+    'technical_requirements',
+    'user_requirements',
+    'acceptance_criteria',
+    'hardware_verification',
+    'software_verification',
+    'documentation',
+    'main_function_test',
+    'interface_test',
+    'security_test',
+    'test_scenario',
+    'test_data',
+    'performance_result',
+    'pq_conclusion',
+    'executive_summary',
+    'overall_result',
+    'deviation',
+    'recommendation',
+    'iq_result',
+    'oq_result'
+];
+
+$dateKeys = [
+    'request_date',
+    'installation_date',
+    'test_date',
+    'completion_date'
+];
+
 if ($data || ($stage['name'] === 'Generic')) {
     foreach ($fields as $label => $key) {
+        $value = $data[$key] ?? '-';
+        if (in_array($key, $dateKeys, true) && !empty($value) && $value !== '-') {
+            $ts = strtotime((string)$value);
+            if ($ts !== false) {
+                $value = date('d-m-Y', $ts);
+            }
+        }
+
         $sheet->setCellValue('A' . $row, $label);
-        $sheet->setCellValue('B' . $row, $data[$key] ?? '-');
-        
+        $sheet->setCellValue('B' . $row, $value);
+
         $sheet->getStyle('A' . $row)->applyFromArray($labelStyle);
         $sheet->getStyle('B' . $row)->applyFromArray($valueStyle);
-        
+
+        if (in_array($key, $largeTextKeys, true) || (is_string($value) && mb_strlen($value) > 120)) {
+            $sheet->getRowDimension($row)->setRowHeight(80);
+        } else {
+            $sheet->getRowDimension($row)->setRowHeight(20);
+        }
+
         $row++;
     }
 } else {
     $sheet->setCellValue('A' . $row, "No data available for this stage.");
     $sheet->mergeCells("A$row:B$row");
     $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getRowDimension($row)->setRowHeight(18);
     $row++;
 }
 
-// Documents Section
 $row += 2;
+
 $sheet->setCellValue('A' . $row, 'Uploaded Documents');
 $sheet->mergeCells("A$row:B$row");
-$sheet->getStyle('A' . $row)->applyFromArray($subHeaderStyle);
+$sheet->getStyle('A' . $row)->applyFromArray($greenBarStyle);
+$sheet->getRowDimension($row)->setRowHeight(25);
 $row++;
 
 $stmtDocs = $pdo->prepare("SELECT * FROM stage_documents WHERE stage_id = :id ORDER BY uploaded_at DESC");
@@ -224,6 +360,7 @@ if (count($documents) > 0) {
     $sheet->setCellValue('B' . $row, 'Upload Date');
     $sheet->getStyle('A' . $row)->applyFromArray($labelStyle);
     $sheet->getStyle('B' . $row)->applyFromArray($labelStyle);
+    $sheet->getRowDimension($row)->setRowHeight(20);
     $row++;
 
     foreach ($documents as $doc) {
@@ -231,20 +368,32 @@ if (count($documents) > 0) {
         $sheet->setCellValue('B' . $row, $doc['uploaded_at']);
         $sheet->getStyle('A' . $row)->applyFromArray($valueStyle);
         $sheet->getStyle('B' . $row)->applyFromArray($valueStyle);
+        $sheet->getRowDimension($row)->setRowHeight(18);
         $row++;
     }
 } else {
     $sheet->setCellValue('A' . $row, 'No documents uploaded.');
     $sheet->mergeCells("A$row:B$row");
     $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getRowDimension($row)->setRowHeight(18);
+    $row++;
 }
 
-// Auto width
+$row += 2;
+$sheet->setCellValue(
+    'A' . $row,
+    'Catatan : Setiap copy dokumen internal tanpa tanda "Controlled Copy" dianggap sebagai dokumen tidak terkendali. Adalah tanggung jawab setiap pengguna untuk memastikan isi dokumen yang digunakan sebagai yang terbaru dan berlaku serta memusnahkan dokumen lama yang sudah tidak berlaku.'
+);
+$sheet->mergeCells("A$row:B$row");
+$sheet->getStyle('A' . $row)->applyFromArray($noteStyle);
+$sheet->getRowDimension($row)->setRowHeight(35);
+
 $sheet->getColumnDimension('A')->setWidth(30);
-$sheet->getColumnDimension('B')->setWidth(70);
+$sheet->getColumnDimension('B')->setWidth(80);
 
 // Download
-$filename = preg_replace('/[^a-zA-Z0-9]/', '_', $stage['name']) . '_Report.xlsx';
+$filenameBase = $docPrefix . '-' . $docCode . ' ' . $docDisplayStageName . ' Report';
+$filename = preg_replace('/[\\\\\\/\\:\\*\\?\\"\\<\\>\\|]+/', '', $filenameBase) . '.xlsx';
 
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="' . $filename . '"');

@@ -23,7 +23,7 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     
     $pdo->exec($sql);
-    echo "<p>Tabel <code>risk_assessments</code> berhasil dibuat/diupdate.</p>";
+    echo "<p>Table <code>risk_assessments</code> has been created/updated.</p>";
 
     // 2. Add columns to projects table for caching risk status (optional but good for performance)
     // Check if columns exist first to avoid errors
@@ -37,14 +37,14 @@ try {
         $stmt = $pdo->query("SHOW COLUMNS FROM projects LIKE '$col'");
         if (!$stmt->fetch()) {
             $pdo->exec("ALTER TABLE projects ADD COLUMN $col $def");
-            echo "<p>Kolom <code>$col</code> berhasil ditambahkan ke tabel <code>projects</code>.</p>";
+            echo "<p>Column <code>$col</code> has been added to table <code>projects</code>.</p>";
         } else {
-            echo "<p>Kolom <code>$col</code> sudah ada di tabel <code>projects</code>.</p>";
+            echo "<p>Column <code>$col</code> already exists in table <code>projects</code>.</p>";
         }
     }
 
-    echo "<h2>Setup Selesai</h2>";
-    echo "<a href='dashboard.php'>Kembali ke Dashboard</a>";
+    echo "<h2>Setup Completed</h2>";
+    echo "<a href='dashboard.php'>Back to Dashboard</a>";
 
 } catch (PDOException $e) {
     echo "<h2 style='color:red'>Error</h2>";

@@ -8,6 +8,13 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
+function getStageDisplayName(string $stageName): string {
+    return match ($stageName) {
+        'Laporan Validasi' => 'Validation Report',
+        default => $stageName
+    };
+}
+
 $project_id = $_GET['id'] ?? 0;
 
 if (!$project_id) {
@@ -64,6 +71,9 @@ $details = [
     'Created By' => $project['creator_name'] ?? 'Unknown',
     'Software Name' => $project['software'],
     'Version' => $project['version'],
+    'Validator Name' => $project['validator_name'] ?? '-',
+    'Validation Plan Date' => !empty($project['validation_plan_date'] ?? null) ? date('M d, Y', strtotime($project['validation_plan_date'])) : '-',
+    'Department' => $project['department'] ?? '-',
     'Description' => $project['description'],
     'Created' => date('M d, Y, h:i A', strtotime($project['created_at'])),
     'Last Updated' => date('M d, Y, h:i A', strtotime($project['updated_at'] ?? $project['created_at']))
@@ -103,7 +113,7 @@ foreach ($headers as $header) {
 
 $row++;
 foreach ($stages as $stage) {
-    $sheet->setCellValue('A' . $row, $stage['name']);
+    $sheet->setCellValue('A' . $row, getStageDisplayName($stage['name']));
     $sheet->setCellValue('B' . $row, $stage['status']);
     
     $note = ($stage['status'] === 'Completed') ? "Completed on " . date('M d, Y') : "Pending";

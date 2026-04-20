@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 11, 2026 at 09:14 AM
+-- Generation Time: Feb 12, 2026 at 12:28 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.26
 
@@ -33,21 +33,25 @@ CREATE TABLE `projects` (
   `software` varchar(100) NOT NULL,
   `version` varchar(50) DEFAULT NULL,
   `description` text,
+  `validator_name` varchar(255) DEFAULT NULL,
+  `validation_plan_date` date DEFAULT NULL,
+  `department` varchar(255) DEFAULT NULL,
   `status` enum('Draft','In Progress','Completed') DEFAULT 'Draft',
   `created_by` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `max_rpn` int DEFAULT '0',
   `risk_level` enum('Low','Medium','High','Non-GxP') DEFAULT NULL,
   `next_revalidation_date` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 --
 -- Dumping data for table `projects`
 --
 
 INSERT INTO `projects` (`id`, `name`, `software`, `version`, `description`, `status`, `created_by`, `created_at`, `max_rpn`, `risk_level`, `next_revalidation_date`) VALUES
-(6, 'Sistem ERP SAP S/4HANA v2.0', 'SAP S/4HANA', '2.0.5', 'Validation of the new ERP system module for Inventory and Finance.', 'In Progress', 1, '2026-01-28 10:43:38', 126, 'High', '2027-02-11'),
-(8, 'fghjkl;', 'ghjkl', 'ghjkl', 'hjnk', 'Draft', 2, '2026-01-28 12:35:34', 216, 'High', '2027-02-11');
+(12, 'Validation Report - Delta LIMS', 'Delta LIMS', '3.0', 'Lab Information Management System validation.', 'Completed', 1, '2026-02-11 17:28:17', 0, NULL, NULL),
+(13, 'Validation Report - Epsilon CRM', 'Epsilon CRM', '5.2', 'CRM module validation report.', 'Completed', 1, '2026-02-11 17:28:17', 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -62,23 +66,24 @@ CREATE TABLE `project_stages` (
   `status` enum('Not Started','In Progress','Completed') DEFAULT 'Not Started',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `completion_date` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 --
 -- Dumping data for table `project_stages`
 --
 
 INSERT INTO `project_stages` (`id`, `project_id`, `name`, `status`, `updated_at`, `completion_date`) VALUES
-(26, 6, 'User Request Specification', 'Completed', '2026-01-28 10:43:38', NULL),
-(27, 6, 'IQ - Installation Qualification', 'Completed', '2026-01-28 10:43:38', NULL),
-(28, 6, 'OQ - Operational Qualification', 'In Progress', '2026-01-28 10:43:38', NULL),
-(29, 6, 'PQ - Performance Qualification', 'Not Started', '2026-01-28 10:43:38', NULL),
-(30, 6, 'Laporan Validasi', 'Not Started', '2026-01-28 10:43:38', NULL),
-(36, 8, 'User Request Specification', 'Not Started', '2026-01-28 12:35:34', NULL),
-(37, 8, 'IQ - Installation Qualification', 'Not Started', '2026-01-28 12:35:34', NULL),
-(38, 8, 'OQ - Operational Qualification', 'Not Started', '2026-01-28 12:35:34', NULL),
-(39, 8, 'PQ - Performance Qualification', 'Not Started', '2026-01-28 12:35:34', NULL),
-(40, 8, 'Laporan Validasi', 'Not Started', '2026-01-28 12:35:34', NULL);
+(56, 12, 'User Request Specification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(57, 12, 'IQ - Installation Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(58, 12, 'OQ - Operational Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(59, 12, 'PQ - Performance Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(60, 12, 'Validation Report', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(61, 13, 'User Request Specification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(62, 13, 'IQ - Installation Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(63, 13, 'OQ - Operational Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(64, 13, 'PQ - Performance Qualification', 'Completed', '2026-02-11 17:28:17', '2026-02-12'),
+(65, 13, 'Validation Report', 'Completed', '2026-02-11 17:28:17', '2026-02-12');
 
 -- --------------------------------------------------------
 
@@ -100,16 +105,8 @@ CREATE TABLE `risk_assessments` (
   `corrective_actions` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `risk_assessments`
---
-
-INSERT INTO `risk_assessments` (`id`, `project_id`, `process_name`, `failure_mode`, `effect_of_failure`, `cause_of_failure`, `severity`, `occurrence`, `detection`, `rpn`, `corrective_actions`, `created_at`, `updated_at`) VALUES
-(1, 8, 'fghjk', 'tyui', 'gyhuj', 'ghj', 3, 8, 9, 216, 'hujik', '2026-02-11 07:28:55', '2026-02-11 07:28:55'),
-(2, 6, 'ghjkl', 'ghjk', 'ihiu', 'jij', 3, 7, 6, 126, '', '2026-02-11 07:46:29', '2026-02-11 07:46:29'),
-(3, 6, 'ghjkl', 'ghjk', 'ihiu', 'jij', 1, 1, 1, 1, 'sjksn', '2026-02-11 07:49:01', '2026-02-11 07:49:01');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -123,7 +120,16 @@ CREATE TABLE `stage_documents` (
   `file_name` varchar(255) NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `uploaded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
+
+--
+-- Dumping data for table `stage_documents`
+--
+
+INSERT INTO `stage_documents` (`id`, `stage_id`, `file_name`, `file_path`, `uploaded_at`) VALUES
+(6, 60, 'Report_Delta_LIMS.pdf', 'D:\\APLIKASI\\laragon\\www\\PHP NATIVE\\crud/uploads/1770830897_3_Report_Delta_LIMS.pdf', '2026-02-11 17:28:17'),
+(7, 65, 'Report_Epsilon_CRM.pdf', 'D:\\APLIKASI\\laragon\\www\\PHP NATIVE\\crud/uploads/1770830897_4_Report_Epsilon_CRM.pdf', '2026-02-11 17:28:17');
 
 -- --------------------------------------------------------
 
@@ -139,15 +145,8 @@ CREATE TABLE `stage_iq_details` (
   `software_verification` text,
   `documentation` text,
   `iq_result` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `stage_iq_details`
---
-
-INSERT INTO `stage_iq_details` (`id`, `stage_id`, `installation_date`, `hardware_verification`, `software_verification`, `documentation`, `iq_result`) VALUES
-(4, 27, '2024-02-01', 'Verified server specifications match requirements.', 'Software installed successfully on production server.', 'Installation manual v1.0, Configuration guide.', 'Pass'),
-(6, 27, '2024-02-01', 'Verified server specifications match requirements.', 'Software installed successfully on production server.', 'Installation manual v1.0, Configuration guide.', 'Pass');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -163,15 +162,8 @@ CREATE TABLE `stage_oq_details` (
   `interface_test` text,
   `security_test` text,
   `oq_result` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `stage_oq_details`
---
-
-INSERT INTO `stage_oq_details` (`id`, `stage_id`, `test_date`, `main_function_test`, `interface_test`, `security_test`, `oq_result`) VALUES
-(2, 28, '2024-02-15', 'Testing core modules: Finance, Inventory, Sales.', 'Testing API integration with legacy systems.', 'Penetration testing and role-based access control.', 'Pending'),
-(3, 28, '2024-02-15', 'Testing core modules: Finance, Inventory, Sales.', 'Testing API integration with legacy systems.', 'Penetration testing and role-based access control.', 'Pending');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -187,7 +179,8 @@ CREATE TABLE `stage_pq_details` (
   `test_data` text,
   `performance_result` text,
   `pq_conclusion` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -206,15 +199,8 @@ CREATE TABLE `stage_urs_details` (
   `technical_requirements` text,
   `user_requirements` text,
   `acceptance_criteria` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `stage_urs_details`
---
-
-INSERT INTO `stage_urs_details` (`id`, `stage_id`, `requestor_name`, `requestor_department`, `request_date`, `software_purpose`, `functional_requirements`, `technical_requirements`, `user_requirements`, `acceptance_criteria`) VALUES
-(4, 26, 'Budi Santoso', 'IT Department', '2024-01-15', 'To manage inventory and finance processes efficiently.', 'Must handle 10,000 transactions per day.', 'Server with 32GB RAM, 1TB SSD.', 'User friendly interface, Indonesian language support.', 'All functional tests passed with 0 critical defects.'),
-(6, 26, 'Budi Santoso', 'IT Department', '2024-01-15', 'To manage inventory and finance processes efficiently.', 'Must handle 10,000 transactions per day.', 'Server with 32GB RAM, 1TB SSD.', 'User friendly interface, Indonesian language support.', 'All functional tests passed with 0 critical defects.');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -236,7 +222,8 @@ CREATE TABLE `stage_validation_report_details` (
   `reviewed_date` datetime DEFAULT NULL,
   `approved_by` int DEFAULT NULL,
   `approved_date` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 -- --------------------------------------------------------
 
@@ -251,7 +238,8 @@ CREATE TABLE `users` (
   `role` enum('admin','user') DEFAULT 'user',
   `profile_picture` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+;
 
 --
 -- Dumping data for table `users`
@@ -295,7 +283,9 @@ INSERT INTO `user_logs` (`id`, `user_id`, `action`, `details`, `ip_address`, `us
 (12, 1, 'Logout', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36', '2026-01-31 04:02:11'),
 (13, 1, 'Failed Login', NULL, '10.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0', '2026-01-24 00:17:11'),
 (14, 1, 'Logout', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36', '2026-02-05 15:18:11'),
-(15, 1, 'Login', NULL, '172.16.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0', '2026-01-20 04:24:11');
+(15, 1, 'Login', NULL, '172.16.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0', '2026-01-20 04:24:11'),
+(16, 1, 'Login', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0', '2026-02-12 10:13:01'),
+(17, 1, 'Login', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', '2026-02-12 10:16:35');
 
 --
 -- Indexes for dumped tables
@@ -388,13 +378,13 @@ ALTER TABLE `user_logs`
 -- AUTO_INCREMENT for table `projects`
 --
 ALTER TABLE `projects`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `project_stages`
 --
 ALTER TABLE `project_stages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `risk_assessments`
@@ -406,7 +396,7 @@ ALTER TABLE `risk_assessments`
 -- AUTO_INCREMENT for table `stage_documents`
 --
 ALTER TABLE `stage_documents`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `stage_iq_details`
@@ -430,13 +420,13 @@ ALTER TABLE `stage_pq_details`
 -- AUTO_INCREMENT for table `stage_urs_details`
 --
 ALTER TABLE `stage_urs_details`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `stage_validation_report_details`
 --
 ALTER TABLE `stage_validation_report_details`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -448,7 +438,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logs`
 --
 ALTER TABLE `user_logs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Constraints for dumped tables
